@@ -1,0 +1,15 @@
+# Ignore notes
+Notes/
+
+# Ignore virtual environment
+.venv/
+
+# Ignore environment variables
+.env
+
+# VS Code settings
+.vscode/
+
+# Python cache
+__pycache__/
+*.pyc
