@@ -13,3 +13,6 @@ Notes/
 # Python cache
 __pycache__/
 *.pyc
+
+# UV binaries
+Tools/*.exe
