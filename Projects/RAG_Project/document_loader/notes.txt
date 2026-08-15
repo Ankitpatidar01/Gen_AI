@@ -1,0 +1,713 @@
+RAG NOTES
+=========
+
+1. What is RAG?
+---------------
+
+RAG stands for Retrieval-Augmented Generation.
+
+RAG is an architecture that combines information retrieval with a Large Language Model (LLM). Instead of asking an LLM to answer a question only from its pretrained knowledge, RAG first retrieves relevant information from an external knowledge base and provides that information to the LLM as context.
+
+The basic RAG pipeline is:
+
+User Query
+    |
+    v
+Query Processing
+    |
+    v
+Retriever
+    |
+    v
+Relevant Documents
+    |
+    v
+Context Construction
+    |
+    v
+Large Language Model
+    |
+    v
+Final Answer
+
+
+2. Why is RAG Needed?
+---------------------
+
+Large Language Models have several limitations.
+
+First, their knowledge may not contain private or organization-specific information.
+
+Second, their knowledge can become outdated after training.
+
+Third, an LLM may generate incorrect information when it does not know the answer. This behavior is commonly called hallucination.
+
+RAG addresses these problems by allowing the model to retrieve information from an external knowledge source before generating an answer.
+
+For example, suppose a company has an internal employee handbook.
+
+A normal LLM may not know the company's vacation policy.
+
+With RAG, the employee handbook can be stored in a searchable knowledge base. When an employee asks about vacation policy, the system retrieves the relevant section and provides it to the LLM.
+
+
+3. Main Components of RAG
+-------------------------
+
+A typical RAG system contains the following components:
+
+1. Document Loader
+2. Text Splitter
+3. Embedding Model
+4. Vector Database
+5. Retriever
+6. Reranker
+7. Prompt Template
+8. Large Language Model
+9. Evaluation System
+
+
+4. Document Loading
+-------------------
+
+The first step is loading information into the RAG system.
+
+Documents can come from many sources:
+
+- PDF files
+- TXT files
+- Word documents
+- CSV files
+- Web pages
+- Databases
+- APIs
+- Markdown files
+
+For example, a PDF containing a company's employee policies can be loaded and converted into plain text.
+
+The goal of document loading is to transform different types of documents into a format that can be processed by the RAG pipeline.
+
+
+5. Document Chunking
+--------------------
+
+Large documents should usually not be inserted into the vector database as one large piece.
+
+Instead, documents are divided into smaller pieces called chunks.
+
+For example:
+
+Original document:
+
+"Machine learning is a branch of artificial intelligence. It allows computers to learn patterns from data. Supervised learning uses labeled data..."
+
+This document can be divided into chunks such as:
+
+Chunk 1:
+"Machine learning is a branch of artificial intelligence."
+
+Chunk 2:
+"It allows computers to learn patterns from data."
+
+Chunk 3:
+"Supervised learning uses labeled data."
+
+Chunking improves retrieval because the system can retrieve only the relevant part of a document.
+
+Important chunking parameters include:
+
+- Chunk size
+- Chunk overlap
+
+Chunk overlap allows neighboring chunks to share some text.
+
+
+6. Embeddings
+-------------
+
+An embedding is a numerical representation of text.
+
+For example, a sentence can be converted into a vector:
+
+"Machine learning is useful"
+
+might become a vector such as:
+
+[0.21, -0.45, 0.72, 0.18, ...]
+
+The actual embedding contains many dimensions.
+
+Semantically similar sentences tend to have similar vector representations.
+
+For example:
+
+"How does machine learning work?"
+
+and
+
+"Explain the working of ML"
+
+should have embeddings that are relatively close to each other.
+
+
+7. Vector Database
+------------------
+
+A vector database stores embeddings and allows efficient similarity search.
+
+Popular vector databases include:
+
+- ChromaDB
+- FAISS
+- Pinecone
+- Weaviate
+- Milvus
+- Qdrant
+
+ChromaDB is commonly used for local RAG projects because it is simple to set up and can store embeddings along with their associated documents and metadata.
+
+A typical ChromaDB record contains:
+
+Document text
+Embedding
+Document ID
+Metadata
+
+Metadata might contain information such as:
+
+- Filename
+- Page number
+- Document type
+- Creation date
+- Source
+
+
+8. Similarity Search
+--------------------
+
+When a user asks a question, the question is converted into an embedding.
+
+The system compares the query embedding with document embeddings stored in the vector database.
+
+The most similar documents are retrieved.
+
+Common similarity measures include:
+
+- Cosine similarity
+- Euclidean distance
+- Dot product
+
+Cosine similarity measures the angle between two vectors.
+
+A higher cosine similarity generally means that two pieces of text are more semantically similar.
+
+
+9. Retrieval
+------------
+
+Retrieval is the process of finding relevant information from the knowledge base.
+
+Suppose the knowledge base contains 10,000 chunks.
+
+The user asks:
+
+"What is the company's work-from-home policy?"
+
+The retriever might return the top 5 chunks related to work-from-home policies.
+
+These chunks are then passed to the LLM as context.
+
+
+10. Top-K Retrieval
+-------------------
+
+Top-K retrieval means retrieving the K most relevant documents.
+
+For example:
+
+K = 3
+
+means that the system retrieves the three most relevant chunks.
+
+A larger K provides more context but can also introduce irrelevant information.
+
+A smaller K provides less context but may miss useful information.
+
+The appropriate K value depends on the application and should usually be evaluated experimentally.
+
+
+11. Hybrid Search
+-----------------
+
+Vector search is not always sufficient.
+
+Hybrid search combines semantic vector search with keyword-based search.
+
+Two common approaches are:
+
+1. Vector similarity search
+2. BM25 keyword search
+
+Vector search is good at understanding semantic meaning.
+
+BM25 is good at exact keyword matching.
+
+Combining both approaches can improve retrieval quality.
+
+Example:
+
+User query:
+
+"Error code HTTP 404"
+
+A keyword-based search can strongly benefit from matching the exact term "HTTP 404", while semantic search can find documents describing "page not found".
+
+
+12. Reranking
+------------
+
+A retriever may return several potentially relevant documents.
+
+A reranker evaluates these retrieved documents again and orders them according to their relevance to the query.
+
+Example:
+
+Initial retrieval:
+
+Document A
+Document B
+Document C
+Document D
+Document E
+
+After reranking:
+
+Document C
+Document A
+Document E
+Document B
+Document D
+
+The top documents can then be provided to the LLM.
+
+Reranking can improve retrieval precision.
+
+
+13. Prompt Construction
+-----------------------
+
+After retrieving relevant documents, the system constructs a prompt.
+
+A typical RAG prompt contains:
+
+System Instructions
++
+Retrieved Context
++
+User Question
+
+Example:
+
+System:
+Answer the question using only the provided context.
+
+Context:
+Machine learning allows computers to learn patterns from data.
+
+Question:
+What is machine learning?
+
+The LLM uses the retrieved context to generate the final response.
+
+
+14. Large Language Model
+-----------------------
+
+The final stage uses an LLM to generate the answer.
+
+Popular LLM providers include:
+
+- OpenAI
+- Mistral AI
+- Anthropic
+- Google
+- Meta
+
+In a RAG system, the LLM does not necessarily need to contain all the required knowledge in its pretrained parameters.
+
+Instead, it receives relevant information retrieved from the external knowledge base.
+
+
+15. OpenAI in RAG
+-----------------
+
+OpenAI models can be used as the generation model in a RAG pipeline.
+
+The general flow is:
+
+User Query
+    |
+    v
+Retriever
+    |
+    v
+Relevant Context
+    |
+    v
+OpenAI Model
+    |
+    v
+Answer
+
+OpenAI embedding models can also be used to convert documents and queries into vectors.
+
+
+16. Mistral AI in RAG
+---------------------
+
+Mistral AI models can also be used as the generation model.
+
+The same retrieval system can be connected to different LLM providers.
+
+For example:
+
+ChromaDB
+    |
+    +----> OpenAI
+    |
+    +----> Mistral
+
+This makes it possible to compare different models using the same retrieved context.
+
+
+17. Multi-Model RAG
+------------------
+
+A RAG system can support multiple LLM providers.
+
+For example, the application may provide two options:
+
+Model 1:
+OpenAI
+
+Model 2:
+Mistral
+
+The retrieval pipeline remains the same.
+
+Only the generation component changes.
+
+This allows developers to compare:
+
+- Response quality
+- Response speed
+- Cost
+- Hallucination rate
+- Context utilization
+- Answer relevance
+
+
+18. RAG Pipeline
+---------------
+
+A complete RAG pipeline can be represented as:
+
+Step 1:
+Load documents.
+
+Step 2:
+Extract text.
+
+Step 3:
+Split documents into chunks.
+
+Step 4:
+Generate embeddings.
+
+Step 5:
+Store embeddings in ChromaDB.
+
+Step 6:
+Receive a user query.
+
+Step 7:
+Generate an embedding for the query.
+
+Step 8:
+Search ChromaDB.
+
+Step 9:
+Retrieve the most relevant chunks.
+
+Step 10:
+Optionally perform hybrid search.
+
+Step 11:
+Optionally rerank the retrieved chunks.
+
+Step 12:
+Construct the prompt.
+
+Step 13:
+Send the prompt and context to the LLM.
+
+Step 14:
+Generate the final answer.
+
+Step 15:
+Return the answer and optionally provide source citations.
+
+
+19. Hallucination in RAG
+------------------------
+
+Hallucination occurs when an LLM generates information that is unsupported or incorrect.
+
+RAG can reduce hallucination by providing relevant external context.
+
+However, RAG does not completely eliminate hallucination.
+
+If the retriever retrieves incorrect information, the LLM may generate an incorrect answer based on that information.
+
+Therefore, retrieval quality is extremely important.
+
+
+20. Grounded Generation
+-----------------------
+
+Grounded generation means that the generated answer is based on retrieved evidence.
+
+A good RAG system should ideally:
+
+- Use retrieved information.
+- Avoid unsupported claims.
+- Provide citations when possible.
+- Say that information is unavailable when the knowledge base does not contain the answer.
+
+
+21. RAG Evaluation
+------------------
+
+RAG systems should be evaluated systematically.
+
+Important evaluation metrics include:
+
+Retrieval metrics:
+
+- Recall
+- Precision
+- Hit Rate
+- Mean Reciprocal Rank
+- Normalized Discounted Cumulative Gain
+
+Generation metrics:
+
+- Faithfulness
+- Answer Relevance
+- Context Relevance
+- Context Recall
+
+RAGAS is one framework that can be used to evaluate RAG systems.
+
+
+22. Common Problems in RAG
+--------------------------
+
+Problem 1:
+Poor document chunking.
+
+Solution:
+Experiment with chunk size and overlap.
+
+Problem 2:
+Irrelevant retrieval.
+
+Solution:
+Use better embeddings, hybrid search, metadata filtering, or reranking.
+
+Problem 3:
+Hallucination.
+
+Solution:
+Use strong prompts, better retrieval, citations, and answer validation.
+
+Problem 4:
+Too much context.
+
+Solution:
+Retrieve fewer chunks or use reranking.
+
+Problem 5:
+Missing information.
+
+Solution:
+Increase retrieval recall or improve chunking.
+
+
+23. Important RAG Concepts
+--------------------------
+
+Important concepts to learn for RAG include:
+
+- Document ingestion
+- Chunking
+- Embeddings
+- Vector databases
+- Similarity search
+- Metadata filtering
+- Top-K retrieval
+- Hybrid search
+- BM25
+- Reranking
+- Query rewriting
+- Query expansion
+- Context compression
+- Prompt engineering
+- Grounded generation
+- Citation generation
+- Conversation memory
+- RAG evaluation
+- Hallucination detection
+
+
+24. Advanced RAG
+----------------
+
+Advanced RAG systems can use:
+
+- Hybrid retrieval
+- Query rewriting
+- Multi-query retrieval
+- Reranking
+- Metadata filtering
+- Parent-child retrieval
+- Context compression
+- Self-query retrieval
+- Agentic RAG
+- Graph RAG
+- Multi-modal RAG
+
+These techniques can improve retrieval quality for complex applications.
+
+
+25. Simple RAG Example
+----------------------
+
+Suppose a knowledge base contains:
+
+"The company's annual leave policy provides employees with 24 days of paid annual leave."
+
+User asks:
+
+"How many annual leave days do employees receive?"
+
+The retriever finds the relevant chunk.
+
+Retrieved context:
+
+"The company's annual leave policy provides employees with 24 days of paid annual leave."
+
+The LLM receives the context and question.
+
+Final answer:
+
+"Employees receive 24 days of paid annual leave per year."
+
+
+26. RAG vs Fine-Tuning
+----------------------
+
+RAG and fine-tuning solve different problems.
+
+RAG is useful when:
+
+- Information changes frequently.
+- External documents need to be searched.
+- Private company information is required.
+- Source citations are important.
+
+Fine-tuning is useful when:
+
+- Model behavior needs customization.
+- A specific output format is required.
+- Domain-specific patterns need to be learned.
+
+RAG changes the information available to the model at inference time.
+
+Fine-tuning changes the model itself through additional training.
+
+
+27. Final RAG Architecture
+---------------------------
+
+A production RAG system can look like:
+
+Documents
+    |
+    v
+Document Loader
+    |
+    v
+Text Cleaning
+    |
+    v
+Chunking
+    |
+    v
+Embedding Model
+    |
+    v
+ChromaDB
+    |
+    |
+    | <--- User Query
+    |
+    v
+Retriever
+    |
+    v
+Hybrid Search
+    |
+    v
+Reranker
+    |
+    v
+Context
+    |
+    v
+Prompt Template
+    |
+    +-------------------+
+    |                   |
+    v                   v
+ OpenAI              Mistral
+    |                   |
+    +---------+---------+
+              |
+              v
+         Final Answer
+              |
+              v
+          Evaluation
+
+
+28. Key Takeaway
+----------------
+
+RAG is not simply "vector database + LLM."
+
+A high-quality RAG system requires multiple stages:
+
+Document ingestion
+-> Chunking
+-> Embedding
+-> Vector storage
+-> Retrieval
+-> Reranking
+-> Context construction
+-> LLM generation
+-> Evaluation
+
+The quality of the final answer depends heavily on the quality of retrieval.
+
+Therefore, improving retrieval is one of the most important parts of building a reliable RAG system.
