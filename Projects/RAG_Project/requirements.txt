@@ -1,0 +1,101 @@
+# ==============================
+# LLM PROVIDERS
+# ==============================
+
+openai
+mistralai
+
+# ==============================
+# LANGCHAIN / RAG FRAMEWORK
+# ==============================
+
+langchain
+langchain-core
+langchain-community
+langchain-openai
+langchain-mistralai
+langchain-chroma
+
+# ==============================
+# VECTOR DATABASE
+# ==============================
+
+chromadb
+
+# ==============================
+# EMBEDDINGS
+# ==============================
+
+sentence-transformers
+
+# ==============================
+# MACHINE LEARNING
+# ==============================
+
+torch
+transformers
+accelerate
+
+# ==============================
+# DOCUMENT LOADERS
+# ==============================
+
+pypdf
+python-docx
+openpyxl
+unstructured
+
+# ==============================
+# TEXT / HTML PROCESSING
+# ==============================
+
+beautifulsoup4
+lxml
+tiktoken
+
+# ==============================
+# NUMERICAL / DATA PROCESSING
+# ==============================
+
+numpy
+pandas
+
+# ==============================
+# API / BACKEND
+# ==============================
+
+fastapi
+uvicorn
+python-multipart
+
+# ==============================
+# ENVIRONMENT VARIABLES
+# ==============================
+
+python-dotenv
+
+# ==============================
+# HTTP / API UTILITIES
+# ==============================
+
+requests
+httpx
+
+# ==============================
+# RAG EVALUATION
+# ==============================
+
+ragas
+
+# ==============================
+# RERANKING
+# ==============================
+
+rank-bm25
+
+# ==============================
+# DEVELOPMENT / DEBUGGING
+# ==============================
+
+ipython
+jupyter
