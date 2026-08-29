@@ -99,3 +99,7 @@ rank-bm25
 
 ipython
 jupyter
+
+# tools
+
+langchain-tavily

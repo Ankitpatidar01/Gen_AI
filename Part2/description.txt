@@ -1,0 +1,1 @@
+This part contain RAG Project which is in projects folder with name RAG_Project
